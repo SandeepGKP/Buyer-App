@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react"; // Added Suspense
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Buyer } from "@/lib/schema";
@@ -21,7 +21,7 @@ interface BuyersResponse {
   };
 }
 
-export default function BuyersList() {
+function BuyersList() { // Removed 'export default'
   const [data, setData] = useState<BuyersResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -90,8 +90,8 @@ export default function BuyersList() {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <p className="text-lg text-gray-600">Loading buyers...</p>
       </div>
-    );
-  }
+  );
+}
 
   const buyers = data?.buyers || [];
   const pagination = data?.pagination || { page: 1, limit: 10, total: 0, pages: 0 };
@@ -245,7 +245,7 @@ export default function BuyersList() {
                 </tr>
               </thead>
               <tbody>
-                {buyers.map((buyer) => {
+                {buyers.map((buyer: Buyer) => { // Explicitly typed buyer
                   const isOwner = buyer.ownerId === 'user-demo-1'; // In real app, this would be from user context
 
                   return (
@@ -345,5 +345,18 @@ export default function BuyersList() {
       )}
       </div>
     </div>
+  );
+}
+
+// Wrap BuyersList with Suspense for useSearchParams
+export default function SuspendedBuyersList() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-lg text-gray-600">Loading filters...</p>
+      </div>
+    }>
+      <BuyersList />
+    </Suspense>
   );
 }
