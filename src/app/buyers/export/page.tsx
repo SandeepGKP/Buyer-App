@@ -1,3 +1,5 @@
+"use client";
+
 import Header from '@/components/Header';
 
 export default function ExportBuyers() {
@@ -9,9 +11,9 @@ export default function ExportBuyers() {
       <p className="text-lg text-gray-600 mb-6">
         Export your buyers data to a CSV file. The export includes all buyers owned by you, without any filters.
       </p>
-      <div className="text-sm text-gray-500 mb-6">
+      {/* <div className="text-sm text-gray-500 mb-6">
         Note: To export filtered results, apply filters on the Buyers List page and use an export button there (future enhancement).
-      </div>
+      </div> */}
       <button
         onClick={() => window.open('/api/buyers/export', '_blank')}
         className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"

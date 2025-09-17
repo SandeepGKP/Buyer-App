@@ -27,7 +27,7 @@ export const createBuyerSchema = z
   timeline: z.enum(timelines, 'Invalid timeline'),
   source: z.enum(sources, 'Invalid source'),
     notes: z.string().max(1000, 'Notes must be at most 1000 characters').optional(),
-    tags: z.string().optional().transform(val => val ? val.split(',').map(t => t.trim()).filter(t => t.length > 0) : []),
+    tags: z.array(z.string()).optional(),
   })
   .superRefine((data, ctx) => {
     // Validate budgetMin < budgetMax if both present

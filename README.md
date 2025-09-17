@@ -21,27 +21,38 @@ A Next.js application for managing buyer leads with modern web technologies.
 - Role: Agent
 
 **Ownership Rules:**
-- ✅ **Edit/Delete**: You can only modify buyers where `ownerId` matches your user ID
-- ✅ **View**: You can view all buyers in the system
-- ❌ **Cannot Edit**: For buyers with different owner IDs, you see "Read-only" instead of "Edit"
+- **Edit/Delete**: You can only modify buyers where `ownerId` matches your user ID
+- **View**: You can view all buyers in the system
+- **Cannot Edit**: For buyers with different owner IDs, you see "Read-only" instead of "Edit"
 
 **Visual Indicators:**
-- ⭐ **"★ Yours" badge**: Next to buyer names you own
-- 🔄 **Status dropdown**: Only available for your buyers
-- 📝 **Edit button**: Only shows for buyers you own
-- 🌫️ **Grayed out**: Non-owned buyers appear with reduced opacity
+-  **"Yours" badge**: Next to buyer names you own
+-  **Status dropdown**: Only available for your buyers
+-  **Edit button**: Only shows for buyers you own
+-  **Grayed out**: Non-owned buyers appear with reduced opacity
 
 ### In Production Applications:
 Replace the mock user (`user-demo-1`) with real authentication system (NextAuth.js, Clerk, etc.)
 
 ## Features Implemented
 
-### ✅ Core Functionality
+###  Core Functionality
 - **Create Lead Form** (`/buyers/new`)
   - Conditional fields (BHK for residential properties)
   - Client-side validation with React Hook Form
   - Server-side validation with Zod
   - Form state management and error handling
+
+- **Expanded Edit Form** (`/buyers/[id]`)
+  - All relevant buyer fields are editable
+  - Conditional fields (BHK for residential properties)
+  - Client-side validation with React Hook Form
+  - Server-side validation with Zod
+  - Form state management and error handling
+
+- **Delete Buyer Functionality** (`/buyers/[id]`)
+  - Client-side confirmation dialog
+  - Server-side deletion via API
 
 - **Database Schema**
   - Buyers table with all required fields
@@ -60,6 +71,9 @@ Replace the mock user (`user-demo-1`) with real authentication system (NextAuth.
   - GET `/api/buyers/export` - Export buyers to CSV
   - POST `/api/buyers/import` - Import buyers from CSV
 
+- **CSV Export Page** (`/buyers/export`)
+  - Client Component for interactive download
+
 - **Validation & Safety**
   - Zod schemas for all buyer data
   - Email/phone format validation
@@ -67,7 +81,7 @@ Replace the mock user (`user-demo-1`) with real authentication system (NextAuth.
   - BHK requirement for residential types
   - Database-level constraints
 
-### ✅ Architecture Quality
+###  Architecture Quality
 - **Type Safety:** Full TypeScript coverage
 - **SSR Ready:** Server-side data operations
 - **Scalable Structure:** Modular components and utilities
@@ -138,7 +152,7 @@ Create `.env.local`:
 - Responsive design with Tailwind
 - Loading states and error feedback
 
-## What's Done ✅
+## What's Done 
 
 - Complete form with conditional logic
 - Database schema with relations

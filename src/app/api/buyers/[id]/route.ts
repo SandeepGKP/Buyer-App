@@ -10,11 +10,11 @@ const getCurrentUser = () => ({ id: demoUserId });
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = getCurrentUser();
-    const buyerId = params.id;
+    const { id: buyerId } = await params;
 
     const buyer = await db
       .select()
@@ -48,11 +48,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = getCurrentUser();
-    const buyerId = params.id;
+    const { id: buyerId } = await params;
     const body = await request.json();
 
     // Validate input
@@ -107,33 +107,51 @@ export async function PUT(
       if (updateData[key] === undefined) delete updateData[key];
     });
 
-    await db.transaction(async (tx) => {
-      // Update buyer
-      await tx
-        .update(buyers)
-        .set(updateData)
-        .where(eq(buyers.id, buyerId));
+    await db.transaction((tx) => { // Synchronous callback
+      return new Promise<void>(async (resolve, reject) => { // Return a promise
+        try {
+          // Update buyer
+          await tx
+            .update(buyers)
+            .set(updateData)
+            .where(eq(buyers.id, buyerId));
 
-      // Record history
-      const diff: any = {};
-      Object.keys(updateData).forEach(key => {
-        const oldVal = (existingBuyer as any)[key];
-        const newVal = updateData[key];
-        if (oldVal !== newVal) {
-          diff[key] = {
-            old: oldVal,
-            new: newVal,
-          };
+          // Record history
+          const diff: any = {};
+          Object.keys(updateData).forEach(key => {
+            const oldVal = (existingBuyer as any)[key];
+            const newVal = updateData[key];
+
+            if (key === 'tags') {
+              // Deep compare arrays for tags
+              const oldTags = Array.isArray(oldVal) ? oldVal.sort() : [];
+              const newTags = Array.isArray(newVal) ? newVal.sort() : [];
+              if (JSON.stringify(oldTags) !== JSON.stringify(newTags)) {
+                diff[key] = {
+                  old: oldVal,
+                  new: newVal,
+                };
+              }
+            } else if (oldVal !== newVal) {
+              diff[key] = {
+                old: oldVal,
+                new: newVal,
+              };
+            }
+          });
+
+          if (Object.keys(diff).length > 0) {
+            await tx.insert(buyerHistory).values({
+              buyerId,
+              changedBy: user.id,
+              diff,
+            });
+          }
+          resolve(); // Resolve the promise
+        } catch (error) {
+          reject(error); // Reject on error
         }
       });
-
-      if (Object.keys(diff).length > 0) {
-        await tx.insert(buyerHistory).values({
-          buyerId,
-          changedBy: user.id,
-          diff,
-        });
-      }
     });
 
     // Get updated buyer
@@ -156,11 +174,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = getCurrentUser();
-    const buyerId = params.id;
+    const { id: buyerId } = await params;
 
     // Check ownership
     const buyer = await db
