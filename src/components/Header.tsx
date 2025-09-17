@@ -1,7 +1,9 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { isLoggedIn, getCurrentUserId, logout } from '@/lib/auth';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   { name: 'Home', href: '/' },
@@ -11,15 +13,23 @@ const navItems = [
   { name: 'Export CSV', href: '/buyers/export' },
 ];
 
-// Mock user for demo - in real app this would come from authentication
-const currentUser = {
-  id: 'user-demo-1',
-  name: 'Demo User',
-  role: 'Agent'
-};
-
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoggedIn(isLoggedIn());
+    setUserId(getCurrentUserId());
+  }, [pathname]); // Re-check login status on route change
+
+  const handleLogout = () => {
+    logout();
+    setLoggedIn(false);
+    setUserId(null);
+    router.push('/login');
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 border-b border-blue-300 shadow-lg backdrop-blur-sm">
@@ -42,7 +52,7 @@ export default function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-1">
-            {navItems.map((item) => {
+            {loggedIn && navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
@@ -61,6 +71,30 @@ export default function Header() {
                 </Link>
               );
             })}
+            {!loggedIn && (
+              <>
+                <Link
+                  href="/login"
+                  className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    pathname === '/login'
+                      ? 'bg-white/20 text-white shadow-md transform scale-105'
+                      : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    pathname === '/register'
+                      ? 'bg-white/20 text-white shadow-md transform scale-105'
+                      : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -74,25 +108,35 @@ export default function Header() {
 
           {/* User Info */}
           <div className="flex items-center space-x-4">
-            <div className="hidden sm:flex bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
-              <div className="flex flex-col">
-                <div className="text-xs text-white/70 uppercase tracking-wider font-medium">
-                  {currentUser.role}
+            {loggedIn && (
+              <>
+                <div className="hidden sm:flex bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
+                  <div className="flex flex-col">
+                    <div className="text-xs text-white/70 uppercase tracking-wider font-medium">
+                      Agent
+                    </div>
+                    <div className="text-sm text-white font-medium">
+                      Demo User
+                    </div>
+                    <div className="text-xs text-white/70 font-mono">
+                      ID: {userId}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-sm text-white font-medium">
-                  {currentUser.name}
-                </div>
-                <div className="text-xs text-white/70 font-mono">
-                  ID: {currentUser.id}
-                </div>
-              </div>
-            </div>
 
-            {/* User Avatar */}
-            <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold shadow-lg">
-              {currentUser.name.charAt(0).toUpperCase()}
-            </div>
+                {/* User Avatar */}
+                <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold shadow-lg">
+                  D
+                </div>
 
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Logout
+                </button>
+              </>
+            )}
             <div className="hidden lg:block text-sm text-white/60 px-2">
               v1.0
             </div>
@@ -100,21 +144,23 @@ export default function Header() {
         </div>
 
         {/* Enhanced User Information Banner */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 rounded-b-lg border-l-4 border-white shadow-inner">
-          <div className="flex items-start space-x-2">
-            <div className="flex-shrink-0 w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <div className="text-sm text-white">
-              Welcome back! You can edit/delete buyers where owner ID matches yours
-              <span className="font-mono ml-1 px-1.5 py-0.5 bg-white/20 rounded text-xs">
-                {currentUser.id}
-              </span>
+        {loggedIn && (
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 rounded-b-lg border-l-4 border-white shadow-inner">
+            <div className="flex items-start space-x-2">
+              <div className="flex-shrink-0 w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
+                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div className="text-sm text-white">
+                Welcome back! You can edit/delete buyers where owner ID matches yours
+                <span className="font-mono ml-1 px-1.5 py-0.5 bg-white/20 rounded text-xs">
+                  {userId}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </header>
   );

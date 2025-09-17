@@ -27,10 +27,8 @@ export async function GET(
       return NextResponse.json({ error: 'Buyer not found' }, { status: 404 });
     }
 
-    // Check ownership
-    if (buyer.ownerId !== user.id) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
-    }
+    // Anyone logged in can view all buyers, ownership check is for edit/delete
+    // No ownership check for GET
 
     // Get history
     const history = await db
