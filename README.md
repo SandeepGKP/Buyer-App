@@ -94,7 +94,13 @@ Replace the mock user (`user-demo-1`) with real authentication system (NextAuth.
 
 ### Quick Start
 
-1. **Clone & Install**
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/SandeepGKP/Buyer-App.git
+   cd Buyer-App
+   ```
+
+2. **Install Dependencies**
    ```bash
    npm install
    ```
